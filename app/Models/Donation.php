@@ -16,24 +16,24 @@ class Donation extends Model
     public function setStatusPending()
     {
         $this->attributes['status'] = DonationStatusEnum::PENDING;
-        self::save();
+        $this->save();
     }
 
     public function setStatusSuccess()
     {
         $this->attributes['status'] = DonationStatusEnum::SUCCESS;
-        self::save();
+        $this->save();
     }
 
     public function setStatusFailed()
     {
         $this->attributes['status'] = DonationStatusEnum::FAILED;
-        self::save();
+        $this->save();
     }
 
     public function setStatusExpired()
     {
         $this->attributes['status'] = DonationStatusEnum::EXPIRED;
-        self::save();
+        $this->save();
     }
 }
