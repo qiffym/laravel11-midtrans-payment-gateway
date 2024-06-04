@@ -46,44 +46,40 @@
         </div>
 
         <div class="container px-4 py-5">
-            <form id="donation_form" class="row g-3" method="post" action="{{ route('donations.store') }}">
-                @method('post')
-                @csrf
-
-                <legend>Donation</legend>
-                <div class="col-md-6">
-                    <label for="donor_name" class="form-label">Nama</label>
-                    <input type="text" name="donor_name" class="form-control" id="donor_name">
-                </div>
-                <div class="col-md-6">
-                    <label for="donor_email" class="form-label">Email</label>
-                    <input type="email" name="donor_email" class="form-control" id="donor_email">
-                </div>
-                <div class="col-md-12">
-                    <label for="donation_type" class="form-label">Jenis Donasi</label>
-                    <select name="donation_type" id="donation_type" class="form-select">
-                        <option selected>Pilih jenis donasi</option>
-                        <option value="medis_kesehatan">Medis & Kesehatan</option>
-                        <option value="kemanusiaan">Kemanusiaan</option>
-                        <option value="bencana_alam">Bencana Alam</option>
-                        <option value="rumah_ibadah">Rumah Ibadah</option>
-                        <option value="beasiswa_pendidikan">Beasiswa & Pendidikan</option>
-                        <option value="sarana_infrastruktur">Sarana & Infrastruktur</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label for="amount" class="form-label">Jumlah</label>
-                    <input type="number" name="amount" class="form-control" id="amount">
-                </div>
-                <div class="col-md-6">
-                    <label for="note" class="form-label">Catatan (optional)</label>
-                    <textarea name="note" class="form-control" id="note" rows="3"></textarea>
-                </div>
-
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary px-5">Kirim</button>
-                </div>
-            </form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Donor Name</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Donation Type</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" style="text-align: center"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($donations as $donation)
+                        <tr>
+                            <th scope="row"><code>{{ $donation->id }}</code></th>
+                            <td>{{ $donation->donor_name }}</td>
+                            <td>{{ Number::currency($donation->amount, 'IDR', 'id') }}</td>
+                            <td>{{ Str::title(str_replace('_', ' ', $donation->donation_type)) }}</td>
+                            <td>{{ Str::ucfirst($donation->status->value) }}</td>
+                            <td style="text-align: center">
+                                @if ($donation->status == \App\Enums\DonationStatusEnum::PENDING)
+                                    <button class="btn btn-success btn-sm"
+                                        onclick="snap.pay('{{ $donation->snap_token }}')">
+                                        Complete Payment
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    {{ $donations->links() }}
+                </tfoot>
+            </table>
         </div>
     </main>
 
@@ -100,37 +96,6 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous">
-    </script>
-    <script>
-        $("#donation_form").submit(function(e) {
-            e.preventDefault();
-
-            $.post("/donation", {
-                _method: 'POST',
-                _token: '{{ csrf_token() }}',
-                donor_name: $('input#donor_name').val(),
-                donor_email: $('input#donor_email').val(),
-                donation_type: $('select#donation_type').val(),
-                amount: $('input#amount').val(),
-                note: $('textarea#note').val(),
-            }, function(data, status) {
-                snap.pay(data.snap_token, {
-                    onSuccess: function(result) {
-                        alert("payment success!");
-                        console.log(result);
-                    },
-                    onPending: function(result) {
-                        alert("wating your payment!");
-                        console.log(result);
-                    },
-                    onError: function(result) {
-                        alert("payment failed!");
-                        console.log(result);
-                    },
-                });
-                return false;
-            })
-        })
     </script>
 </body>
 
